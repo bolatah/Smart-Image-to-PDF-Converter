@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "expoImageToPDFConverter",
-    "slug": "expoImageToPDFConverter",
+    "name": "Smart Image to PDF Converter",
+    "slug": "Smart Image to PDF Converter",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

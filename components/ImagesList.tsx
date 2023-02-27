@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, StyleSheet, Dimensions, StatusBar } from "react-native";
 import {
   Text,
   IconButton,
@@ -8,11 +8,13 @@ import {
   Dialog,
   Button,
 } from "react-native-paper";
-import useControllers from "../utils/useControllers";
 import SortableList, { RowProps } from "react-native-sortable-list";
+import { Asset } from "expo-media-library";
+import useControllers from "../utils/useControllers";
+
 import PDFModal from "./PDFModal";
 import Row from "./ListRow";
-import { Asset } from "expo-media-library";
+import Toast from "./Toast";
 
 type ImagesListProps = {
   data: Asset[];
@@ -24,7 +26,10 @@ const window = Dimensions.get("window");
 const ImagesList = (props: ImagesListProps) => {
   const [visibleDialog, setVisibleDialog] = useState(false);
   const [visibleModalPDF, setVisibleModalPDF] = useState(false);
+  const [arrayInHTML, setArrayInHTML] = useState<Array<string>>();
+
   const controller = useControllers();
+
   let { data, displayImages } = props;
 
   const hideDialog = () => setVisibleDialog(false);
@@ -47,7 +52,9 @@ const ImagesList = (props: ImagesListProps) => {
   const toggleModalPDF = () => {
     setVisibleModalPDF(!visibleModalPDF);
   };
-
+  const modifyHTML = () => {
+    return arrayInHTML;
+  };
   const renderRow = useCallback(({ data, active, index }: RowProps) => {
     return (
       <Row
@@ -59,15 +66,39 @@ const ImagesList = (props: ImagesListProps) => {
     );
   }, []);
 
+  const showToast = () => {
+    return (
+      <Toast
+        type="Info"
+        title={"Please press on the image to drag!"}
+        message={
+          "You can change the order of images before converting to a PDF file."
+        }
+      />
+    );
+  };
+
+  useEffect(() => {
+    displayImages().then((res) => {
+      setArrayInHTML(res);
+      showToast();
+    });
+  }, []);
+
+  useEffect(() => {
+    displayImages().then((res) => {
+      setArrayInHTML(res);
+    });
+  }, [data.length]);
+
   return (
     <>
-      <View style={{ flexDirection: "row-reverse" }}>
+      <View style={styles.tooltip}>
         <Tooltip title="Delete all">
           <IconButton
-            iconColor="#FF0000"
             icon="file-image-remove"
             selected
-            size={20}
+            size={25}
             onPress={() => setVisibleDialog(true)}
           />
         </Tooltip>
@@ -75,19 +106,18 @@ const ImagesList = (props: ImagesListProps) => {
           <IconButton
             icon="file-image-plus"
             selected
-            size={20}
+            size={25}
             onPress={addImage}
           />
         </Tooltip>
         <Tooltip title="Take a picture">
-          <IconButton icon="camera" selected size={20} onPress={takePicture} />
+          <IconButton icon="camera" selected size={25} onPress={takePicture} />
         </Tooltip>
         <Tooltip title="Convert to PDF File">
           <IconButton
             icon="file-pdf-box"
-            iconColor="#FF0000"
             selected
-            size={20}
+            size={29}
             onPress={toggleModalPDF}
           />
         </Tooltip>
@@ -97,22 +127,35 @@ const ImagesList = (props: ImagesListProps) => {
         style={styles.list}
         contentContainerStyle={styles.contentContainer}
         renderRow={renderRow}
-        onReleaseRow={(key, currentOrder) => {
-          console.log(key, currentOrder);
+        onReleaseRow={async (key, currentOrder) => {
+          const newReorderedArray = Array.from(
+            currentOrder.map((i) => data[i].uri)
+          );
+
+          {
+            newReorderedArray
+              ? setArrayInHTML(newReorderedArray)
+              : displayImages().then((res) => setArrayInHTML(res));
+          }
         }}
       />
 
       <PDFModal
         visible={visibleModalPDF}
         toggleModal={toggleModalPDF}
-        displayImages={displayImages}
+        modifyHTML={modifyHTML}
       />
+
       <Portal>
-        <Dialog visible={visibleDialog} onDismiss={hideDialog}>
+        <Dialog
+          visible={visibleDialog}
+          onDismiss={hideDialog}
+          style={styles.modal}
+        >
           <Dialog.Content>
-            <Dialog.Icon icon="alert" />
-            <Text variant="bodyMedium">
-              Are you sure to delete all images ?
+            <Text style={styles.dialogText}>
+              <Dialog.Icon icon="alert" size={15} /> Are you sure to delete all
+              images ?
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
@@ -124,21 +167,26 @@ const ImagesList = (props: ImagesListProps) => {
     </>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#eee",
+    paddingTop: StatusBar.currentHeight,
+    backgroundColor: "#E0C9A6",
+    padding: 8,
   },
   title: {
     fontSize: 20,
     paddingVertical: 20,
     color: "#999999",
   },
+  tooltip: { flexDirection: "row-reverse" },
   list: {
     flex: 1,
   },
+  modal: { backgroundColor: "#fff", borderRadius: 0 },
+  dialogText: { fontWeight: "600", fontSize: 17, marginTop: -20 },
   contentContainer: {
     width: window.width,
     paddingHorizontal: 0,

@@ -14,6 +14,11 @@ import { Tooltip, IconButton } from "react-native-paper";
 import { RowProps } from "react-native-sortable-list";
 import useControllers from "../utils/useControllers";
 import FullImageModal from "./FullImageModal";
+import { LogBox } from "react-native";
+
+LogBox.ignoreLogs([
+  "Animated: `useNativeDriver` was not specified. This is a required option and must be explicitly set to `true` or `false`",
+]);
 
 const window = Dimensions.get("window");
 
@@ -62,10 +67,10 @@ const Row = (props: IRow) => {
 
   useEffect(() => {
     Animated.timing(activeAnim.current, {
+      useNativeDriver: true,
       duration: 300,
       easing: Easing.bounce,
       toValue: Number(active),
-      useNativeDriver: true,
     }).start();
   }, [active]);
 
@@ -88,7 +93,7 @@ const Row = (props: IRow) => {
           </Tooltip>
           <Tooltip title="Enlarge Image">
             <IconButton
-              icon="dock-window"
+              icon="window-maximize"
               selected
               size={20}
               onPress={toggleModalFullImage}

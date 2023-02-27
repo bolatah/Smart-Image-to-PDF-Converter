@@ -32,11 +32,12 @@ const useControllers = () => {
       let status = await MediaLibrary.requestPermissionsAsync();
 
       if (status.granted) {
-        const albumTest = await MediaLibrary.getAlbumAsync("test");
+        const albumTest = await MediaLibrary.getAlbumAsync(
+          "smart-image-to-pdf-converter"
+        );
         if (albumTest) {
           const albumAssets = await MediaLibrary.getAssetsAsync({
             album: albumTest.id,
-            sortBy: "creationTime",
           });
           const assets = albumAssets.assets;
 
@@ -55,20 +56,26 @@ const useControllers = () => {
       let status = await MediaLibrary.requestPermissionsAsync();
 
       if (status.granted) {
-        let album = await MediaLibrary.getAssetsAsync({
-          album: "-1033159534",
-          sortBy: "creationTime",
-        });
-
-        if (album) {
-          const assets = album.assets;
-          let images = [];
-          for (let asset of assets) {
-            asset = await MediaLibrary.getAssetInfoAsync(asset.id);
-            let assetUri = asset.uri;
-            images.push(assetUri);
+        let images = [];
+        const albumTest = await MediaLibrary.getAlbumAsync(
+          "smart-image-to-pdf-converter"
+        );
+        if (albumTest) {
+          const AlbumAssets = await MediaLibrary.getAssetsAsync({
+            album: albumTest.id,
+            sortBy: "default",
+          });
+          const assets = AlbumAssets.assets;
+          if (assets) {
+            for (let asset of assets) {
+              asset = await getImage(asset.id);
+              if (asset !== null) {
+                let assetUri = asset.uri;
+                images.push(assetUri);
+              }
+            }
+            return images;
           }
-          return images;
         }
       }
     } catch (error) {
@@ -84,7 +91,9 @@ const useControllers = () => {
       });
       let status = await MediaLibrary.requestPermissionsAsync();
       if (status.granted && resultCamera.assets !== null) {
-        const album = await MediaLibrary.getAlbumAsync("test");
+        const album = await MediaLibrary.getAlbumAsync(
+          "smart-image-to-pdf-converter"
+        );
         if (album) {
           let assetsArray = [];
           for (let asset of resultCamera.assets) {
@@ -101,7 +110,7 @@ const useControllers = () => {
             resultCamera.assets[0].uri
           );
           let newAlbum = await MediaLibrary.createAlbumAsync(
-            "test",
+            "smart-image-to-pdf-converter",
             newAsset,
             false
           );
@@ -122,24 +131,22 @@ const useControllers = () => {
       });
       let status = await MediaLibrary.requestPermissionsAsync();
       if (status.granted && !result.canceled) {
-        const album = await MediaLibrary.getAlbumAsync("test");
+        const album = await MediaLibrary.getAlbumAsync(
+          "smart-image-to-pdf-converter"
+        );
         if (album) {
           let assetsArray = [];
           for (let asset of result.assets) {
             const assetUri = await MediaLibrary.createAssetAsync(asset.uri);
             assetsArray.push(assetUri);
           }
-          await MediaLibrary.addAssetsToAlbumAsync(
-            assetsArray,
-            album.id,
-            false
-          );
+          await MediaLibrary.addAssetsToAlbumAsync(assetsArray, album.id, true);
         } else {
           let newAsset = await MediaLibrary.createAssetAsync(
             result.assets[0].uri
           );
           let newAlbum = await MediaLibrary.createAlbumAsync(
-            "test",
+            "smart-image-to-pdf-converter",
             newAsset,
             false
           );
@@ -165,7 +172,7 @@ const useControllers = () => {
           result.assets[0].uri
         );
         let newAlbum = await MediaLibrary.createAlbumAsync(
-          "test",
+          "smart-image-to-pdf-converter",
           newAsset,
           false
         );
@@ -180,7 +187,9 @@ const useControllers = () => {
     try {
       let status = await MediaLibrary.requestPermissionsAsync();
       if (status.granted) {
-        const album = await MediaLibrary.getAlbumAsync("test");
+        const album = await MediaLibrary.getAlbumAsync(
+          "smart-image-to-pdf-converter"
+        );
         console.log(album.id);
       }
     } catch (error) {

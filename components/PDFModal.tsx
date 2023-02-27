@@ -1,125 +1,131 @@
 import * as React from "react";
-import {
-  View,
-  StyleSheet,
-  Text,
-  Modal,
-  Alert,
-  Pressable,
-  TextInput,
-} from "react-native";
+import { View, StyleSheet, Text, Modal, TextInput, Alert } from "react-native";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { useEffect, useState } from "react";
 import * as FileSytem from "expo-file-system";
+import * as fs from "expo-file-system";
+import { Button } from "react-native-paper";
 
 type PDFModalProps = {
   visible: boolean;
-  displayImages: () => Promise<string[]>;
   toggleModal: () => void;
+  modifyHTML: () => string[] | void;
 };
 
 const initialText = "File name";
 
 export default function PDFModal(props: PDFModalProps) {
   const [value, setValue] = useState(initialText);
-  let { visible, displayImages, toggleModal } = props;
+  let { visible, toggleModal, modifyHTML } = props;
 
-  /*   const images = async () => {
-    await displayImages();
-  }; */
-  const html = `
-  <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-    </head>
-    <body style="text-align: center;">
-      <script>
-      const parentTag = document.getElementsByTagName("body");
-      for (i = 0; i < assets.length; i++) {
-        var image = document.createElement("img");
-        image.setAttribute("src", assets[i].uri);
-        parentTag.appendChild(image);
-      }
-      </script>
-    </body>
-  </html>
-  `;
+  let images = modifyHTML();
+
+  console.log(`PDF: ${images}`);
+
   const sharePDF = async () => {
-    if (value.length > 0 && value !== initialText) {
-      try {
-        let { uri } = await Print.printToFileAsync({ html });
-        let uuidName = uri.substring(
-          uri.lastIndexOf("/") + 1,
-          uri.lastIndexOf(".pdf")
-        );
+    try {
+      if (images && value.length > 0 && value !== initialText) {
+        console.log(`images : ${images}`);
 
-        const customizedNewUri = uri.replace(uuidName, value);
-        await FileSytem.moveAsync({ from: uri, to: customizedNewUri });
-
-        const isSharable = await Sharing.isAvailableAsync();
-
-        if (isSharable) {
-          await Sharing.shareAsync(customizedNewUri, {
-            UTI: ".pdf",
-            mimeType: "Printlication/pdf",
+        const imgTagsRes = images.map(async (image) => {
+          const res = await fs.readAsStringAsync(image, {
+            encoding: "base64",
           });
-        } else {
-          alert(`Sharing isn't available.`);
-        }
-      } catch (error) {
-        console.log(error);
+
+          return `<img src="data:image/jpeg;base64,${res}" style="width: 90vw;"/>`;
+        });
+
+        Promise.all(imgTagsRes).then(async (res) => {
+          let { uri } = await Print.printToFileAsync({
+            html: `<html>` + res.join("\r\n") + `</html>`,
+          });
+          let uuidName = uri.substring(
+            uri.lastIndexOf("/") + 1,
+            uri.lastIndexOf(".pdf")
+          );
+
+          const customizedNewUri = uri.replace(uuidName, value);
+          FileSytem.moveAsync({ from: uri, to: customizedNewUri });
+          const isSharable = await Sharing.isAvailableAsync();
+          if (isSharable) {
+            await Sharing.shareAsync(customizedNewUri, {
+              UTI: ".pdf",
+              mimeType: "Printlication/pdf",
+            });
+          } else {
+            alert(`Sharing isn't available.`);
+          }
+        });
+      } else {
+        Alert.alert("Wrong file name!");
       }
-    } else {
-      Alert.alert("wrong file name");
+    } catch (error) {
+      console.log(error);
     }
   };
   useEffect(() => {
     setValue(initialText);
   }, [toggleModal]);
 
+  useEffect(() => {
+    setTimeout(
+      () =>
+        Alert.alert(
+          "Please press on the images to drag them!",
+          "You can change the order of images before converting to a PDF file"
+        ),
+      5000
+    );
+  }, []);
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={() => {
-        toggleModal();
-        Alert.alert("Window has been closed.");
-      }}
-    >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text>Please give a name for your PDF file!</Text>
-          <TextInput
-            editable
-            maxLength={40}
-            onChangeText={(text) => setValue(text)}
-            value={value}
-            style={styles.input}
-          />
-          <View style={{ flexDirection: "row" }}>
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => {
-                toggleModal();
+    <>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={visible}
+        onRequestClose={() => {
+          toggleModal();
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Please give a name for your PDF file!
+            </Text>
+            <TextInput
+              editable
+              maxLength={40}
+              onChangeText={(text) => setValue(text)}
+              value={value}
+              style={styles.input}
+            />
+            <View
+              style={{
+                flexDirection: "row",
+                alignSelf: "flex-end",
               }}
             >
-              <Text style={styles.textStyle}>Cancel</Text>
-            </Pressable>
+              <Button
+                onPress={() => {
+                  toggleModal();
+                }}
+              >
+                Cancel
+              </Button>
 
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => {
-                sharePDF().then(() => toggleModal());
-              }}
-            >
-              <Text style={styles.textStyle}>Confirm</Text>
-            </Pressable>
+              <Button
+                onPress={() => {
+                  sharePDF().then(() => toggleModal());
+                }}
+              >
+                Confirm
+              </Button>
+            </View>
           </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+    </>
   );
 }
 const styles = StyleSheet.create({
@@ -131,48 +137,23 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: "white",
-    borderRadius: 20,
+    backgroundColor: "#fff",
     padding: 15,
     alignItems: "center",
-    shadowColor: "#000",
+    width: 335,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    elevation: 10,
   },
+  modalText: { fontWeight: "500", fontSize: 17 },
   input: {
     borderWidth: 1,
+    backgroundColor: "white",
     paddingLeft: 5,
     borderRadius: 5,
     margin: 20,
-  },
-
-  button: {
-    borderRadius: 20,
-    padding: 5,
-    elevation: 2,
-    marginLeft: 20,
-    marginRight: 20,
-    width: 80,
-    height: 30,
-  },
-  buttonOpen: {
-    backgroundColor: "#F194FF",
-  },
-  buttonClose: {
-    backgroundColor: "#2196F3",
-  },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center",
+    width: 150,
   },
 });

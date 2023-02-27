@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { List } from "react-native-paper";
 import useControllers from "../utils/useControllers";
 import ImagesList from "./ImagesList";
-import { Alert } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import { Asset } from "expo-media-library";
 
 function Home() {
@@ -34,32 +34,62 @@ function Home() {
 
   return (
     <>
-      <List.Section title="Image to PDF Converter Management">
+      <List.Section
+        title={assets.length > 0 ? "" : "Smart Image to PDF Converter"}
+        titleStyle={styles.title}
+        style={
+          assets.length > 0 ? styles.section : styles.sectionWithoutDisplay
+        }
+      >
         <List.Accordion
           title="Image Management"
-          left={(props) => <List.Icon {...props} icon="file-image" />}
+          titleStyle={{
+            color: "#000000",
+            alignSelf: !expanded ? "center" : "flex-start",
+            fontWeight: "900",
+            fontSize: 18,
+            backgroundColor: "#F8B6A8",
+          }}
+          style={styles.listAccordionImageManagement}
+          left={(props) => (
+            <List.Icon
+              {...props}
+              icon="file-image"
+              color="#000000"
+              style={{ display: !expanded ? "none" : "flex" }}
+            />
+          )}
           expanded={expanded}
           onPress={() => setExpanded(!expanded)}
         >
           <List.Accordion
             title="Add image"
-            style={{ paddingLeft: 25 }}
+            style={styles.listAccordionAddImage}
+            titleStyle={styles.listAccordionAddImageTitle}
             expanded
-            left={(props) => <List.Icon {...props} icon="image-plus" />}
+            left={(props) => (
+              <List.Icon {...props} icon="image-plus" color="#000000" />
+            )}
             right={() => null}
           >
             <List.Item
               title="Take a Picture"
-              style={{ paddingLeft: 75 }}
-              left={(props) => <List.Icon {...props} icon="camera" />}
+              titleStyle={styles.listItemTitle}
+              style={styles.listItem}
+              left={(props) => (
+                <List.Icon {...props} icon="camera" color="#000000" />
+              )}
               onPress={async () => {
                 await controller.takePicture().then(() => setRefresh(!refresh));
               }}
             />
             <List.Item
               title="Add from gallery"
-              style={{ paddingLeft: 75 }}
-              left={(props) => <List.Icon {...props} icon="file-image-plus" />}
+              titleStyle={styles.listItemTitle}
+              style={styles.listItem}
+              left={(props) => (
+                <List.Icon {...props} icon="file-image-plus" color="#000000" />
+              )}
               onPress={async () => {
                 await controller
                   .addImagesToAlbum()
@@ -69,18 +99,22 @@ function Home() {
           </List.Accordion>
           <List.Item
             title="Display Images"
-            style={{ paddingLeft: 10 }}
-            left={(props) => <List.Icon {...props} icon="file-eye" />}
+            titleStyle={styles.listItemDisplayIMageTitle}
+            style={styles.listItemDisplayImage}
+            left={(props) => (
+              <List.Icon {...props} icon="file-eye" color="#000000" />
+            )}
             onPress={
               assets.length > 0
                 ? async () => {
                     await displayImages();
                   }
-                : () => Alert.alert("there is no image to display")
+                : () => Alert.alert("There is no image to display.")
             }
           />
         </List.Accordion>
       </List.Section>
+
       {assets.length > 0 ? (
         <ImagesList data={assets} displayImages={displayImages} />
       ) : null}
@@ -88,3 +122,44 @@ function Home() {
   );
 }
 export default Home;
+
+const styles = StyleSheet.create({
+  title: {
+    fontSize: 22,
+    margin: 10,
+    fontWeight: "800",
+    color: "#000000",
+    alignSelf: "center",
+  },
+
+  sectionWithoutDisplay: {
+    flex: 1,
+    justifyContent: "center",
+    alignContent: "center",
+    marginTop: 22,
+    backgroundColor: "#E0C9A6",
+  },
+
+  section: { marginTop: 40 },
+
+  listAccordionImageManagement: {
+    justifyContent: "center",
+    alignContent: "center",
+    backgroundColor: "#F8B6A8",
+  },
+  listAccordionAddImage: { paddingLeft: 25, backgroundColor: "#F8B6A8" },
+  listAccordionAddImageTitle: { color: "#000000" },
+  listItem: { paddingLeft: 75, backgroundColor: "#F8B6A8" },
+  listItemTitle: { color: "#000000" },
+  listItemDisplayImage: { paddingLeft: 7, backgroundColor: "#F8B6A8" },
+  listItemDisplayIMageTitle: { color: "#000000", marginLeft: -9 },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+  },
+});
