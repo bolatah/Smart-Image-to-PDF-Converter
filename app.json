@@ -1,8 +1,9 @@
 {
   "expo": {
     "name": "Smart Image to PDF Converter",
-    "slug": "Smart Image to PDF Converter",
-    "version": "1.0.0",
+    "slug": "smartImageToPDFConverter",
+    "version": "1.0.2",
+    
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,18 +19,31 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true,
-      "jsEngine": "jsc"
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.bolatah.smartImageToPDFConverter",
+      "versionCode": "3"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9e1bac19-6898-4945-9176-c92a2a46aff3"
+      }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true
+          }
+        }
+      ]
+    ]
   }
 }

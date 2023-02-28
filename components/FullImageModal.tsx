@@ -1,5 +1,5 @@
 import { Modal, Portal } from "react-native-paper";
-import { Image } from "react-native";
+import { Dimensions, Image, StyleSheet } from "react-native";
 
 type FullImageModalProps = {
   imageUri: string;
@@ -9,6 +9,8 @@ type FullImageModalProps = {
 
 const containerStyle = { backgroundColor: "white", padding: 20 };
 
+const window = Dimensions.get("window");
+
 const FullImageModal = (props: FullImageModalProps) => {
   return (
     <Portal>
@@ -17,13 +19,12 @@ const FullImageModal = (props: FullImageModalProps) => {
         onDismiss={props.toggleModalFullImage}
         contentContainerStyle={containerStyle}
       >
-        <Image
-          source={{ uri: props.imageUri }}
-          style={{ width: 300, height: 300 }}
-        />
+        <Image source={{ uri: props.imageUri }} style={styles.image} />
       </Modal>
     </Portal>
   );
 };
-
+const styles = StyleSheet.create({
+  image: { width: window.width - 20 * 2, height: window.height },
+});
 export default FullImageModal;

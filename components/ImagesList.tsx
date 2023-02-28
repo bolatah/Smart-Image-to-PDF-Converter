@@ -14,7 +14,6 @@ import useControllers from "../utils/useControllers";
 
 import PDFModal from "./PDFModal";
 import Row from "./ListRow";
-import Toast from "./Toast";
 
 type ImagesListProps = {
   data: Asset[];
@@ -66,22 +65,9 @@ const ImagesList = (props: ImagesListProps) => {
     );
   }, []);
 
-  const showToast = () => {
-    return (
-      <Toast
-        type="Info"
-        title={"Please press on the image to drag!"}
-        message={
-          "You can change the order of images before converting to a PDF file."
-        }
-      />
-    );
-  };
-
   useEffect(() => {
     displayImages().then((res) => {
       setArrayInHTML(res);
-      showToast();
     });
   }, []);
 
