@@ -85,18 +85,19 @@ const useControllers = () => {
 
   const takePicture = async () => {
     try {
-      let resultCamera = await ImagePicker.launchCameraAsync({
+      let result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        base64: true,
+        aspect: [4, 3],
+        quality: 1,
       });
       let status = await MediaLibrary.requestPermissionsAsync();
-      if (status.granted && resultCamera.assets !== null) {
+      if (status.granted && result.assets !== null) {
         const album = await MediaLibrary.getAlbumAsync(
           "smart-image-to-pdf-converter"
         );
         if (album) {
           let assetsArray = [];
-          for (let asset of resultCamera.assets) {
+          for (let asset of result.assets) {
             const assetUri = await MediaLibrary.createAssetAsync(asset.uri);
             assetsArray.push(assetUri);
           }
@@ -107,7 +108,7 @@ const useControllers = () => {
           );
         } else {
           let newAsset = await MediaLibrary.createAssetAsync(
-            resultCamera.assets[0].uri
+            result.assets[0].uri
           );
           let newAlbum = await MediaLibrary.createAlbumAsync(
             "smart-image-to-pdf-converter",
@@ -130,7 +131,7 @@ const useControllers = () => {
         quality: 1,
       });
       let status = await MediaLibrary.requestPermissionsAsync();
-      if (status.granted && !result.canceled) {
+      if (status.granted && result.assets !== null) {
         const album = await MediaLibrary.getAlbumAsync(
           "smart-image-to-pdf-converter"
         );
@@ -167,7 +168,7 @@ const useControllers = () => {
         quality: 1,
       });
       let status = await MediaLibrary.requestPermissionsAsync();
-      if (status.granted && !result.canceled) {
+      if (status.granted && result.assets !== null) {
         let newAsset = await MediaLibrary.createAssetAsync(
           result.assets[0].uri
         );

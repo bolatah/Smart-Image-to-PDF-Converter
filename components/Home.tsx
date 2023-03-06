@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { List } from "react-native-paper";
 import useControllers from "../utils/useControllers";
 import ImagesList from "./ImagesList";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, LogBox } from "react-native";
 import { Asset } from "expo-media-library";
+
+LogBox.ignoreAllLogs();
 
 function Home() {
   const [assets, setAssets] = useState<Array<Asset>>([]);
